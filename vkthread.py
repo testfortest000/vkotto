@@ -16,22 +16,9 @@ import os.path
 
 DELAY = 2
 
-RU_MONTH_VALUES = {
-    'янв': 1,
-    'фев': 2,
-    'мар': 3,
-    'апр': 4,
-    'мая': 5,
-    'июн': 6,
-    'июл': 7,
-    'авг': 8,
-    'сен': 9,
-    'окт': 10,
-    'ноя': 11,
-    'дек': 12,
-}
 
-URL = "https://vk.com/topic-25349116_38313695"
+
+URL = "https://vk.com/topic-25349116_24612271"
 options = Options()
 options.add_argument("user-data-dir=C:\\Users\\Alex\\AppData\\Local\\Google\\Chrome\\User Data\\Profileotto")
 driver = webdriver.Chrome(executable_path=r'C:\\Users\\Alex\\PycharmProjects\\new\\chromedriver.exe', options=options)
@@ -39,21 +26,22 @@ driver.get(URL)
 
 time.sleep(DELAY)
 
-resfile = open("otto.csv", 'w', encoding='utf-8', errors='ignore')
+resfile = open("otto_" + str(URL.split("/")[-1]) + ".csv", 'w', encoding='utf-8', errors='ignore')
 
 num = driver.find_element_by_class_name("pg_pages").find_elements_by_class_name("pg_lnk")[-1].get_attribute("href").split("=")[1]
 
 pubs = {}
 
 try:
-    for i in range(int(num) // 20):
-        driver.get(URL + "?offset=" +  str(i * 20))
+    for i in range(0,int(num) + 1 ,20):
+        driver.get(URL + "?offset=" +  str(i ))
         time.sleep(DELAY)
         posts = driver.find_element_by_class_name("wall_module").find_elements_by_class_name("bp_post")
 
         for p in posts:
             author = p.find_element_by_class_name("bp_author")
             a_name, a_href = author.text, author.get_attribute("href")
+            avatar = p.find_element_by_class_name("bp_img").get_attribute("src")
             dattime = p.find_element_by_class_name("bp_date").text.split(" в ")
             text = p.find_element_by_class_name("bp_text").get_attribute('innerHTML').replace("\n","")
             clear_text =  p.find_element_by_class_name("bp_text").text.replace("\n","")
@@ -63,8 +51,8 @@ try:
                 media = ""
 
             pubs[i] = [a_name, a_href, dattime, text, media]
-            print(";".join([a_name, a_href, dattime[0], dattime[1], clear_text, text, media]))
-            resfile.write("\t".join([a_name, a_href, dattime[0], dattime[1], clear_text, text, media]) + "\n")
+            print(";".join([a_name, a_href, dattime[0], dattime[1], clear_text, avatar, text, media]))
+            resfile.write("\t".join([a_name, a_href, dattime[0], dattime[1], clear_text, avatar, text, media]) + "\n")
 
 except Exception as e:
     driver.close()
